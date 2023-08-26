@@ -6,18 +6,15 @@ script = None
 
 
 def pat_con(path):
-    if "/" in path:
-        pt = path.split("/")
-    else:
-        pt = path.split("\\")
-    lin = "/mnt/" + pt[0][0].lower()
+    pt = path.split("/") if "/" in path else path.split("\\")
+    lin = f"/mnt/{pt[0][0].lower()}"
     for f in pt[1:]:
-        lin += "/" + str(f.lower())
+        lin += f"/{str(f.lower())}"
     return lin
 
 
 def get_themes(machine):
-    cmd = 'wsl.exe -d ' + str(machine) + ' "' + str(pat_con(script)) + '" listthemes'
+    cmd = f'wsl.exe -d {str(machine)} "{str(pat_con(script))}" listthemes'
     read = os.popen(cmd).read()
     read = read.split(":theme:")
     read[:] = (value for value in read if value != "\n")
@@ -41,20 +38,20 @@ def get_themes(machine):
 
 from xdg.DesktopEntry import DesktopEntry
 class WSLApp: #Credit to @sanzoghenzo on github. I did some adapting
-    def from_dotdesktop(app_def):
+    def from_dotdesktop(self):
         """
         Return a WSLApp from a .desktop file.
 
         Args:
             app_def: .desktop file path
         """
-        de = DesktopEntry(app_def)
+        de = DesktopEntry(self)
         name = de.getName()
         generic_name = de.getGenericName()
         cmd = de.getExec()
         gui = not de.getTerminal()
         icon = de.getIcon()
-        
+
         return {"name":name, "generic_name":generic_name, "cmd":cmd, "gui":gui, "icon":icon}
 
         #raise IOError("Cannot read the .desktop entry")
@@ -62,7 +59,7 @@ class WSLApp: #Credit to @sanzoghenzo on github. I did some adapting
 
 def get_apps(machine, logger=None):
     #first make sure the machine is booted. Scanning should do the trick
-    cmd = 'wsl.exe -d ' + str(machine) + ' "' + str(pat_con(script)) + '" listapps'
+    cmd = f'wsl.exe -d {str(machine)} "{str(pat_con(script))}" listapps'
     read = os.popen(cmd).read()
     apps = read.splitlines()
     #apps.remove("")
@@ -82,11 +79,11 @@ def get_apps(machine, logger=None):
             path = r"\\wsl$" + "\\" + machine + app
             wsl_app = WSLApp.from_dotdesktop(path)
             if wsl_app["gui"] == True:
-                app_dict.update({wsl_app["name"]: {"cmd": wsl_app["cmd"], "ico": wsl_app["icon"]}})
+                app_dict[wsl_app["name"]] = {"cmd": wsl_app["cmd"], "ico": wsl_app["icon"]}
         except:
             pass
-        
-                
+
+
     #print(read)
     return app_dict
 
@@ -96,7 +93,7 @@ def get_apps_old(machine):
     #    os.remove(script[:-15] + ".scanapps")
     # except:
     #    pass
-    cmd = 'wsl.exe -d ' + str(machine) + ' "' + str(pat_con(script)) + '" listappsold'
+    cmd = f'wsl.exe -d {str(machine)} "{str(pat_con(script))}" listappsold'
     read = os.popen(cmd).read()
     # print("copy")
     # cmd2 = 'wsl.exe -d ' + str(machine) + ' cp ~/.scanapps ' + str(pat_con(script[:-15]))
@@ -134,16 +131,15 @@ def get_apps_old(machine):
             if "%" in run:
                 run = run[:run.index("%") - 1]
 
-            if "Icon=" in app:
-                icon = app[app.index(":ico:") + 10:]
-            else:
-                icon = None
-
-            apps.update({name: {"cmd": run, "ico": icon}})
+            icon = app[app.index(":ico:") + 10:] if "Icon=" in app else None
+            apps[name] = {"cmd": run, "ico": icon}
     return apps
 
 def export_v(machine, name, value, shell="bash"):
-    cmd = 'wsl.exe -d ' + str(machine) + ' "' + str(pat_con(script)) + f'" export-v {name} {value} {shell}'
+    cmd = (
+        f'wsl.exe -d {str(machine)} "{str(pat_con(script))}'
+        + f'" export-v {name} {value} {shell}'
+    )
     print(os.popen(cmd).read()[:-1])
 
 def gtk(machine, scale, shell="bash"):
@@ -163,7 +159,7 @@ def qt(machine, scale, shell="bash"):
         
 
 def dbus(machine):
-    cmd = 'wsl.exe -d ' + str(machine) + ' "' + str(pat_con(script)) + '" dbus'
+    cmd = f'wsl.exe -d {str(machine)} "{str(pat_con(script))}" dbus'
     print(os.popen(cmd).read()[:-1])
 
 
@@ -171,21 +167,21 @@ def dbus(machine):
 
 
 def export(machine, version, shell="bash"):
-    cmd = 'wsl.exe -d ' + str(machine) + ' "' + str(pat_con(script)) + '" export-d ' + str(version) + " " + shell
+    cmd = f'wsl.exe -d {str(machine)} "{str(pat_con(script))}" export-d {str(version)} {shell}'
     print(cmd)
     print(os.popen(cmd).read()[:-1])
 
 def export_audio(machine, version, shell="bash"):
-    cmd = 'wsl.exe -d ' + str(machine) + ' "' + str(pat_con(script)) + '" export-a ' + str(version) + " " + shell
+    cmd = f'wsl.exe -d {str(machine)} "{str(pat_con(script))}" export-a {str(version)} {shell}'
     print(cmd)
     print(os.popen(cmd).read()[:-1])
 
 def cleanup(machine):
-    cmd = 'wsl.exe -d ' + str(machine) + ' "' + str(pat_con(script)) + '" cleanup'
+    cmd = f'wsl.exe -d {str(machine)} "{str(pat_con(script))}" cleanup'
     print(cmd)
     print(os.popen(cmd).read()[:-1])
     
     
 def profile(machine, shell="bash"):
-    cmd = 'wsl.exe -d ' + str(machine) + ' "' + str(pat_con(script)) + '" profile ' + shell
+    cmd = f'wsl.exe -d {str(machine)} "{str(pat_con(script))}" profile {shell}'
     return os.popen(cmd).read()

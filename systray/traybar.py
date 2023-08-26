@@ -46,7 +46,7 @@ class SysTrayIcon(object):
         self._menu_actions_by_id = dict(self._menu_actions_by_id)
         self._menu_commands_by_id = dict(self._menu_commands_by_id)
 
-        window_class_name = window_class_name or ("SysTrayIconPy-%s" % (str(uuid.uuid4())))
+        window_class_name = window_class_name or f"SysTrayIconPy-{str(uuid.uuid4())}"
 
         self._default_menu_index = (default_menu_index or 0)
         self._window_class_name = encode_for_locale(window_class_name)
@@ -223,10 +223,7 @@ class SysTrayIcon(object):
             return
         if self._hicon == 0:
             self._load_icon()
-        if self._notify_id:
-            message = NIM_MODIFY
-        else:
-            message = NIM_ADD
+        message = NIM_MODIFY if self._notify_id else NIM_ADD
         self._notify_id = NotifyData(self._hwnd,
                           0,
                           NIF_ICON | NIF_MESSAGE | NIF_TIP,
@@ -259,8 +256,6 @@ class SysTrayIcon(object):
             pass #Do nothing here
         elif lparam == WM_RBUTTONUP:
             self._show_menu()
-        elif lparam == WM_LBUTTONUP:
-            pass
         return True
 
     def _show_menu(self):
@@ -283,11 +278,7 @@ class SysTrayIcon(object):
         PostMessage(self._hwnd, WM_NULL, 0, 0)
 
     def _create_menu(self, menu, menu_options):
-        if len(menu_options) == 3:
-            index = 0
-        else:
-            index = 1
-
+        index = 0 if len(menu_options) == 3 else 1
         for option_text, option_icon, option_action, cmd, option_id in menu_options[::-1]:
             if option_icon:
                 option_icon = self._prep_menu_icon(option_icon)
@@ -296,14 +287,14 @@ class SysTrayIcon(object):
                 item = PackMENUITEMINFO(text=option_text,
                                         hbmpItem=option_icon,
                                         wID=option_id)
-                InsertMenuItem(menu, 0, 1, ctypes.byref(item))
             else:
                 submenu = CreatePopupMenu()
                 self._create_menu(submenu, option_action)
                 item = PackMENUITEMINFO(text=option_text,
                                         hbmpItem=option_icon,
                                         hSubMenu=submenu)
-                InsertMenuItem(menu, 0, 1,  ctypes.byref(item))
+
+            InsertMenuItem(menu, 0, 1, ctypes.byref(item))
 
     def _prep_menu_icon(self, icon):
         icon = encode_for_locale(icon)
@@ -338,11 +329,10 @@ class SysTrayIcon(object):
         command_id = self._menu_commands_by_id[id]
         if menu_action == SysTrayIcon.QUIT:
             DestroyWindow(self._hwnd)
+        elif command_id != None:
+            menu_action(self, command_id)
         else:
-            if command_id != None:
-                menu_action(self, command_id)
-            else:
-                menu_action(self)
+            menu_action(self)
 
 def non_string_iterable(obj):
     try:

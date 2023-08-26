@@ -40,7 +40,7 @@ print("Copying Assets...")
 folders = ["assets", "locale", "PULSE", "PUTTY", "VCXSRV"]
 for folder in folders:
     print("Merging:", folder)
-    shutil.copytree(folder, f"dist/GWSL_{version}/" + str(folder))
+    shutil.copytree(folder, f"dist/GWSL_{version}/{str(folder)}")
 
 print("Merging: Dashboard...")
 copy_tree("dist/GWSL/", f"dist/GWSL_{version}/")

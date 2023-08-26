@@ -83,7 +83,7 @@ def add(asset_dir):
     #hide_systray.configure(state='enabled')
 
     hide_systray.grid(row=2, column=2, columnspan=4, padx=10, sticky="WE")
-    
+
     tk.Label(frame_1, text='(Please leave the display port number untouched and do not use -ac or -[no]trayicon)').grid(row=3, column=1,
                                                                                                        columnspan=4,
                                                                                                  padx=10,
@@ -124,7 +124,7 @@ def add(asset_dir):
         # draw(canvas, mouse=False)
         time.sleep(0.05)
         boxRoot.update()
-        if boxRoot.running == False:
+        if not boxRoot.running:
             break
         if options != {}:
             return options

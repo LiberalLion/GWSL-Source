@@ -82,18 +82,19 @@ class cmd:
         self.proc.kill()
 
     def run(self, command, wait=False, ident=None):
-        if self.proc != None and self.console == False:
-            if wait == True:
-                command += " &"
-            if " " in command:
-                commands = command.split(" ")
-                for c in commands:
-                    self.proc.stdin.write(c + " ")
-                self.proc.stdin.write("\n")
+        if self.proc is None or self.console != False:
+            return
+        if wait == True:
+            command += " &"
+        if " " in command:
+            commands = command.split(" ")
+            for c in commands:
+                self.proc.stdin.write(f"{c} ")
+            self.proc.stdin.write("\n")
 
-            else:
-                self.proc.stdin.write(command + " \n")
+        else:
+            self.proc.stdin.write(command + " \n")
 
-            if wait == True:
-                self.q.append(ident)
-                self.proc.stdin.write("wait \n")
+        if wait == True:
+            self.q.append(ident)
+            self.proc.stdin.write("wait \n")

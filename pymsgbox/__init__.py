@@ -37,14 +37,13 @@ TODO Roadmap:
 
 import sys
 
-RUNNING_PYTHON_2 = sys.version_info[0] == 2
-
 # Because PyAutoGUI requires PyMsgBox but might be installed on systems
 # without tkinter, we don't want a lack of tkinter to cause installation
 # to fail. So exceptions won't be raised until the PyMsgBox functions
 # are actually called.
 TKINTER_IMPORT_SUCCEEDED = True
 
+RUNNING_PYTHON_2 = sys.version_info[0] == 2
 try:
     if RUNNING_PYTHON_2:
         import Tkinter as tk
@@ -56,9 +55,7 @@ try:
 
     if tk.TkVersion < 8.0:
         raise RuntimeError(
-            "You are running Tk version: "
-            + str(tk.TkVersion)
-            + "You must be using Tk version 8.0 or greater to use PyMsgBox."
+            f"You are running Tk version: {str(tk.TkVersion)}You must be using Tk version 8.0 or greater to use PyMsgBox."
         )
 
 except ImportError:
@@ -113,10 +110,7 @@ def _alertTkinter(text="", title="", button=OK_TEXT, root=None, timeout=None):
     retVal = _buttonbox(
         msg=text, title=title, choices=[str(button)], root=root, timeout=timeout
     )
-    if retVal is None:
-        return button
-    else:
-        return retVal
+    return button if retVal is None else retVal
 
 
 alert = _alertTkinter
@@ -284,7 +278,7 @@ def __put_buttons_in_buttonframe(choices):
         commandButton = tempButton
         handler = __buttonEvent
         for selectionEvent in STANDARD_SELECTION_EVENTS:
-            commandButton.bind("<%s>" % selectionEvent, handler)
+            commandButton.bind(f"<{selectionEvent}>", handler)
 
         if CANCEL_TEXT in choices:
             commandButton.bind("<Escape>", __cancelButtonEvent)
@@ -334,9 +328,9 @@ def __fillablebox(msg, title="", default="", mask=None, root=None, timeout=None)
     global boxRoot, __enterboxText, __enterboxDefaultText
     global cancelButton, entryWidget, okButton
 
-    if title == None:
+    if title is None:
         title == ""
-    if default == None:
+    if default is None:
         default = ""
     __enterboxDefaultText = default
     __enterboxText = __enterboxDefaultText
@@ -353,7 +347,7 @@ def __fillablebox(msg, title="", default="", mask=None, root=None, timeout=None)
         boxRoot.quit()
         boxRoot.destroy()
         return None
-    
+
     boxRoot.title(title)
     boxRoot.iconname("Dialog")
     boxRoot.geometry(rootWindowPosition)
@@ -361,7 +355,7 @@ def __fillablebox(msg, title="", default="", mask=None, root=None, timeout=None)
     boxRoot.attributes("-topmost", True)
 
     boxRoot.protocol("WM_DELETE_WINDOW", quitter)
-    
+
 
     # ------------- define the messageFrame ---------------------------------
     messageFrame = tk.Frame(master=boxRoot)
@@ -408,7 +402,7 @@ def __fillablebox(msg, title="", default="", mask=None, root=None, timeout=None)
     commandButton = okButton
     handler = __enterboxGetText
     for selectionEvent in STANDARD_SELECTION_EVENTS:
-        commandButton.bind("<%s>" % selectionEvent, handler)
+        commandButton.bind(f"<{selectionEvent}>", handler)
 
     # ------------------ cancel button -------------------------------
     cancelButton = ttk.Button(buttonsFrame, takefocus=1, text=CANCEL_TEXT)
@@ -421,7 +415,7 @@ def __fillablebox(msg, title="", default="", mask=None, root=None, timeout=None)
     commandButton = cancelButton
     handler = __enterboxCancel
     for selectionEvent in STANDARD_SELECTION_EVENTS:
-        commandButton.bind("<%s>" % selectionEvent, handler)
+        commandButton.bind(f"<{selectionEvent}>", handler)
 
     # ------------------- time for action! -----------------
     entryWidget.focus_force()  # put the focus on the entryWidget

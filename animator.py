@@ -47,8 +47,7 @@ class animation:
 
                 self.vel = vel
                 self.pos[axis] += vel[axis]
-                if self.pos[axis] < 0:
-                    self.pos[axis] = 0
+                self.pos[axis] = max(self.pos[axis], 0)
                 diff = self.new_pos[axis] - self.pos[axis]
                 if diff < 0:
                     diff *= -1

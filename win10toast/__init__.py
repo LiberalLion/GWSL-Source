@@ -73,7 +73,7 @@ class ToastNotifier(object):
         # Register the window class.
         self.wc = WNDCLASS()
         self.hinst = self.wc.hInstance = GetModuleHandle(None)
-        self.wc.lpszClassName = str("PythonTaskbar")  # must be a string
+        self.wc.lpszClassName = "PythonTaskbar"
         self.wc.lpfnWndProc = message_map  # could also specify a wndproc.
         try:
             self.classAtom = RegisterClass(self.wc)
@@ -96,8 +96,7 @@ class ToastNotifier(object):
             hicon = LoadImage(self.hinst, icon_path,
                               IMAGE_ICON, 0, 0, icon_flags)
         except Exception as e:
-            logging.error("Some trouble with the icon ({}): {}"
-                          .format(icon_path, e))
+            logging.error(f"Some trouble with the icon ({icon_path}): {e}")
             hicon = LoadIcon(0, IDI_APPLICATION)
 
         # Taskbar icon
@@ -136,10 +135,7 @@ class ToastNotifier(object):
 
     def notification_active(self):
         """See if we have an active notification showing"""
-        if self._thread != None and self._thread.is_alive():
-            # We have an active notification, let is finish we don't spam them
-            return True
-        return False
+        return bool(self._thread != None and self._thread.is_alive())
 
     def on_destroy(self, hwnd, msg, wparam, lparam):
         """Clean after notification ended.

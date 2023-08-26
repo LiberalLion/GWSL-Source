@@ -27,7 +27,9 @@ for i in range(20):
     print(20-i)
     #service_name = subprocess.getoutput(f'tasklist /nh /fo csv /FI "PID eq {audio_server_PID}"').split(",")[0]
 
-    service_name = subprocess.getoutput(f'tasklist /nh /fo csv /FI "IMAGENAME eq pulseaudio.exe"').split(",")[0]
+    service_name = subprocess.getoutput(
+        'tasklist /nh /fo csv /FI "IMAGENAME eq pulseaudio.exe"'
+    ).split(",")[0]
 
     print(service_name)
     """

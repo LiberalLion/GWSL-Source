@@ -138,7 +138,7 @@ def confirm(
     elif retVal == IDABORT:
         return pymsgbox.ABORT_TEXT
     else:
-        assert False, "Unexpected return value from MessageBox: %s" % (retVal)
+        assert False, f"Unexpected return value from MessageBox: {retVal}"
 
 
 '''

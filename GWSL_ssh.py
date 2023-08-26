@@ -44,11 +44,11 @@ def get_login(machine):
         filename = tk.filedialog.askopenfilename(initialdir = "~/", title=f"Select a Valid SSH Private Key (.PPK) for {machine}", \
                                       filetypes=[("PPK Key Files","*.ppk")])
         link_key.insert(0, filename)
-        
+
 
     creds = {}
 
-    boxRoot.title("Login to " + str(machine))
+    boxRoot.title(f"Login to {str(machine)}")
     boxRoot.iconname("Dialog")
     boxRoot.minsize(300, 120)
     boxRoot.running = True
@@ -61,7 +61,7 @@ def get_login(machine):
     # First frame
 
     frame_1 = ttk.Frame(boxRoot, padding="0.15i")
-    imager = Image.open(asset_dir + "lock.png")
+    imager = Image.open(f"{asset_dir}lock.png")
     img = PIL.ImageTk.PhotoImage(imager.resize([48, 48]))
     labelm = tk.Label(frame_1, image=img)
     labelm.image = img
@@ -90,7 +90,7 @@ def get_login(machine):
 
     key_b = ttk.Button(frame_1, text="...", command=browse_key, width=4)
     key_b.grid(row=2, column=3, padx=0, sticky="W")
-    
+
     machines = []
 
     frame_1.grid(row=1, column=0, padx=20, sticky="SWE", columnspan=2)
@@ -126,7 +126,7 @@ def get_login(machine):
         # draw(canvas, mouse=False)
         time.sleep(0.05)
         boxRoot.update()
-        if boxRoot.running == False:
+        if not boxRoot.running:
             break
         if creds != {}:
             return creds

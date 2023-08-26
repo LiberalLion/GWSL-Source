@@ -53,7 +53,7 @@ else:
     # we are running in a normal Python environment
     bundle_dir = os.path.dirname(os.path.abspath(__file__))
 
-if debug == True:
+if debug:
     print("debug mode")
     print('we are', frozen, 'frozen')
     print('bundle dir is', bundle_dir)
@@ -67,7 +67,7 @@ app_path = os.getenv('APPDATA') + "\\GWSL\\"
 
 if os.path.isdir(app_path) == False:
     # os.mkdir(app_path)
-    print(subprocess.getoutput('mkdir "' + app_path + '"'))
+    print(subprocess.getoutput(f'mkdir "{app_path}"'))
     print("creating appdata directory")
 
 # EMERGENCY LOG DELETER FOR 1.3.6. Delete in 1.3.8
@@ -95,10 +95,10 @@ class DuplicateFilter(logging.Filter):
         return False
 
 
-logger = logging.Logger("GWSL " + version, level=0)
+logger = logging.Logger(f"GWSL {version}", level=0)
 # logger = logging.getLogger("GWSL " + version)
 # Create handlers
-f_handler = logging.FileHandler(app_path + 'dashboard.log')
+f_handler = logging.FileHandler(f'{app_path}dashboard.log')
 
 # f_handler.setLevel(10)
 
@@ -112,7 +112,7 @@ logger.addFilter(DuplicateFilter())
 
 
 try:
-    iset.path = app_path + "settings.json"
+    iset.path = f"{app_path}settings.json"
 
     if os.path.exists(app_path + "\\settings.json") == False:
         iset.create(app_path + "\\settings.json")
@@ -122,56 +122,80 @@ try:
         if "conf_ver" not in sett:
             iset.create(app_path + "\\settings.json")
             print("Updating settings")
+        elif sett["conf_ver"] >= 4:
+            if debug == True:
+                print("Settings up to date")
         else:
-            if sett["conf_ver"] >= 4:
-                if debug == True:
-                    print("Settings up to date")
-            else:
-                print("Updating settings")
-                old_iset = iset.read()
-                iset.create(app_path + "\\settings.json")
-                new_iset = iset.read()
+            print("Updating settings")
+            old_iset = iset.read()
+            iset.create(app_path + "\\settings.json")
+            new_iset = iset.read()
 
-                #migrate user settings
-                new_iset["putty"]["ip"] = old_iset["putty"]["ip"]
-                new_iset["distro_blacklist"] = old_iset["distro_blacklist"]
-                new_iset["app_blacklist"] = old_iset["app_blacklist"]
-                new_iset["xserver_profiles"] = old_iset["xserver_profiles"]
-                try:
-                    new_iset["general"]["acrylic_enabled"] = old_iset["general"]["acrylic_enabled"]
-                except:
-                    pass
-                try:
-                    new_iset["general"]["start_menu_mode"] = old_iset["general"]["start_menu_mode"]
-                except:
-                    pass
-                try:
-                    new_iset["general"]["shell_gui"] = old_iset["general"]["shell_gui"]
-                except:
-                    pass
-                iset.set(new_iset)
-                
+            #migrate user settings
+            new_iset["putty"]["ip"] = old_iset["putty"]["ip"]
+            new_iset["distro_blacklist"] = old_iset["distro_blacklist"]
+            new_iset["app_blacklist"] = old_iset["app_blacklist"]
+            new_iset["xserver_profiles"] = old_iset["xserver_profiles"]
+            try:
+                new_iset["general"]["acrylic_enabled"] = old_iset["general"]["acrylic_enabled"]
+            except:
+                pass
+            try:
+                new_iset["general"]["start_menu_mode"] = old_iset["general"]["start_menu_mode"]
+            except:
+                pass
+            try:
+                new_iset["general"]["shell_gui"] = old_iset["general"]["shell_gui"]
+            except:
+                pass
+            iset.set(new_iset)
+
 
     # Get the script ready
     import wsl_tools as tools
 
-    if os.path.exists(app_path + "GWSL_helper.sh") == False:
+    if os.path.exists(f"{app_path}GWSL_helper.sh") == False:
         # print("Moving helper script")
-        print(subprocess.getoutput('copy "' + bundle_dir + "\\assets\GWSL_helper.sh" + '" "' + app_path + '"'))
+        print(
+            subprocess.getoutput(
+                f'copy "{bundle_dir}'
+                + "\\assets\GWSL_helper.sh"
+                + '" "'
+                + app_path
+                + '"'
+            )
+        )
     else:
         # make sure the script is up to date
-        scr = open(app_path + "GWSL_helper.sh", "r")
+        scr = open(f"{app_path}GWSL_helper.sh", "r")
         lines = scr.read()
         if "v4" in lines:
             if debug == True:
                 print("Script is up to date")
         else:
             print("Updating Script")
-            print(subprocess.getoutput('copy "' + bundle_dir + "\\assets\GWSL_helper.sh" + '" "' + app_path + '"'))
+            print(
+                subprocess.getoutput(
+                    f'copy "{bundle_dir}'
+                    + "\\assets\GWSL_helper.sh"
+                    + '" "'
+                    + app_path
+                    + '"'
+                )
+            )
 
     if os.path.exists(app_path + lc_name) == False:
         # print("Moving Licenses")
-        print(subprocess.getoutput('copy "' + bundle_dir + "\\assets\\" + lc_name + '" "' + app_path + '"'))
+        print(
+            subprocess.getoutput(
+                f'copy "{bundle_dir}'
+                + "\\assets\\"
+                + lc_name
+                + '" "'
+                + app_path
+                + '"'
+            )
+        )
 except Exception as e:
     logger.exception("Exception occurred - Config generation")
     sys.exit()
@@ -255,7 +279,7 @@ def raise_windows(*args):
 # _ = #zh.gettext
 _ = lambda s: s
 
-default_font = asset_dir + "segoeui.ttf"
+default_font = f"{asset_dir}segoeui.ttf"
 
 # default_font = asset_dir + "NotoSans-Regular.ttf"#"msyh.ttc"
 
@@ -525,12 +549,8 @@ def get_version(machine):
         if wsl_1 == True:
             print("assuming wsl 1")
             return 1
-        
-        for i in machines2:
-            if i[0] == machine:
-                return int(i[2])
-        return 1
-        
+
+        return next((int(i[2]) for i in machines2 if i[0] == machine), 1)
     except:
         return 1
     
@@ -542,9 +562,9 @@ def reboot(machine):
     :param machine:
     :return:
     """
-    os.popen("wsl.exe -t " + str(machine))
+    os.popen(f"wsl.exe -t {str(machine)}")
     time.sleep(1)
-    os.popen("wsl.exe -d " + str(machine))
+    os.popen(f"wsl.exe -d {str(machine)}")
 
 
 def helper(topic):
@@ -553,15 +573,15 @@ def helper(topic):
     :param topic:
     :return:
     """
-    if topic == "machine chooser":
-        url = "the-gwsl-user-interface"
-    elif topic == "configure":
-        url = "configuring-a-wsl-distro-for-use-with-gwsl"
-    elif topic == "theme":
+    if topic in ["configure", "theme"]:
         url = "configuring-a-wsl-distro-for-use-with-gwsl"
     elif topic == "launcher":
         url = "using-the-integrated-linux-app-launcher"
-    webbrowser.get('windows-default').open("https://opticos.github.io/gwsl/tutorials/manual.html#" + str(url))
+    elif topic == "machine chooser":
+        url = "the-gwsl-user-interface"
+    webbrowser.get('windows-default').open(
+        f"https://opticos.github.io/gwsl/tutorials/manual.html#{str(url)}"
+    )
 
 
 def help_short():
@@ -585,12 +605,12 @@ def wsl_run(distro, command, caller, nolog=False):
     """
     One Run to Rule Them All... nvm
     """
-    cmd = "wsl.exe ~ -d " + str(distro) + " . ~/.profile;nohup /bin/sh -c " + '"' + str(command) + '&"'
-    
+    cmd = f'wsl.exe ~ -d {str(distro)} . ~/.profile;nohup /bin/sh -c "{str(command)}&"'
+
     if nolog == False:
         logger.info(f"(runos) WSL SHELL $ {cmd}")
         #logger.info(f"WSL OUTPUT > {out}")
-        
+
     #subprocess.Popen(cmd, shell=True)
     #print(caller, cmd)
     run = subprocess.Popen(
@@ -599,16 +619,14 @@ def wsl_run(distro, command, caller, nolog=False):
             stdout=subprocess.PIPE,
             universal_newlines=True
     )
-    out = str(run.stdout.read().rstrip())
-    #print(out)
-    return out
+    return str(run.stdout.read().rstrip())
     
     #return out
 
 
 def runs(distro, command, nolog=False):
     
-    cmd = "wsl.exe ~ -d " + str(distro) + " . ~/.profile;nohup /bin/sh -c " + '"' + str(command) + '&"'
+    cmd = f'wsl.exe ~ -d {str(distro)} . ~/.profile;nohup /bin/sh -c "{str(command)}&"'
     if nolog == False:
         logger.info(f"(runos) WSL SHELL $ {cmd}")
     subprocess.Popen(cmd,
@@ -622,7 +640,7 @@ def runs(distro, command, nolog=False):
 
 def run(distro, command, nolog=False):
     #"""
-    cmd = "wsl.exe ~ -d " + str(distro) + " . ~/.profile;nohup /bin/sh -c " + '"' + str(command) + '&"'
+    cmd = f'wsl.exe ~ -d {str(distro)} . ~/.profile;nohup /bin/sh -c "{str(command)}&"'
     #old out = subprocess.getoutput(cmd)  # .readlines()
     out = subprocess.check_output(cmd, shell=True, errors="ignore")
     if nolog == False:
@@ -636,7 +654,7 @@ def run(distro, command, nolog=False):
 
 def start_dbus(distro):
     command = "/etc/init.d/dbus start"
-    cmd = "wsl.exe ~ -d " + str(distro) + " /bin/sh -c " + '"' + str(command) + '"'
+    cmd = f'wsl.exe ~ -d {str(distro)} /bin/sh -c "{command}"'
     try:
         out = subprocess.getoutput(cmd)
     except:
@@ -646,7 +664,7 @@ def start_dbus(distro):
 
 def runo3(distro, command, nolog=False):
     #"""
-    cmd = "wsl.exe ~ -d " + str(distro) + " . ~/.profile;/bin/sh -c " + '"' + str(command) + '"'
+    cmd = f'wsl.exe ~ -d {str(distro)} . ~/.profile;/bin/sh -c "{str(command)}"'
     out = subprocess.getoutput(cmd)  # .readlines()
     if nolog == False:
         logger.info(f"(runo3) WSL SHELL $ {cmd}")
@@ -659,7 +677,7 @@ def runo3(distro, command, nolog=False):
 
 def runo2(distro, command, nolog=False):
     #"""
-    cmd = "wsl.exe -d " + str(distro) + ' ' + "/bin/sh -c " + '"' + str(command) + '"'
+    cmd = f'wsl.exe -d {str(distro)} /bin/sh -c "{str(command)}"'
     out = os.popen(cmd).readlines()
     if nolog == False:
         logger.info(f"(runo2) WSL SHELL $ {cmd}")
@@ -685,9 +703,13 @@ def get_ip(machine):
     :return:
     """
     #print("get_ip")
-    cmd = "wsl.exe -d " + str(machine) + ' ' + "/bin/sh -c " + '"' + """(cat /etc/resolv.conf | grep nameserver | awk '{print $2; exit;}')""" + '"'
+    cmd = (
+        f'wsl.exe -d {str(machine)} /bin/sh -c "'
+        + """(cat /etc/resolv.conf | grep nameserver | awk '{print $2; exit;}')"""
+        + '"'
+    )
 
-    
+
     #print(cmd)
     result = os.popen(cmd).readlines()[0]
 
@@ -697,18 +719,22 @@ def get_ip(machine):
         pass
     if "nameserver" in result:
         result = result[len("nameserver") + 1:]
-        
+
     try:
         ipa = ipaddress.ip_address(result)
     except:
-        cmd = "wsl.exe -d " + str(machine) + ' ' + "/bin/sh -c " + '"' + """echo $(cat /etc/resolv.conf | grep nameserver | awk '{print $2; exit;}')""" + '"'
+        cmd = (
+            f'wsl.exe -d {str(machine)} /bin/sh -c "'
+            + """echo $(cat /etc/resolv.conf | grep nameserver | awk '{print $2; exit;}')"""
+            + '"'
+        )
         result = os.popen(cmd).readlines()[0]
-        #result = "localhost"
-    
+            #result = "localhost"
         
+
     #print("ipa", ipa, "ipd")
 
-    
+
     #result = runo3(machine, """echo $(cat /etc/resolv.conf | grep nameserver | awk '{print $2; exit;}')""")
     #print("ip", result, "done")
     return result  # [0][:-1]

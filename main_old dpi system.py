@@ -125,7 +125,9 @@ def set_custom_profile(systray, profile):
 
             restart_server()
     except:
-        logger.exception("Exception occurred - Cannot switch to custom profile " + str(profile))
+        logger.exception(
+            f"Exception occurred - Cannot switch to custom profile {str(profile)}"
+        )
 
 
 def set_default_profile(systray, mode_type):
@@ -149,17 +151,16 @@ def set_default_profile(systray, mode_type):
 
             restart_server()
     except:
-        logger.exception("Exception occurred - Cannot switch to profile type " + str(mode_type))
+        logger.exception(
+            f"Exception occurred - Cannot switch to profile type {str(mode_type)}"
+        )
 
 
 def toggle_clipboard(systray, state):
     """Toggles the clipboard between Windows and WSL graphical apps being on/off. (Only functional in 3 default profiles)"""
     global clipboard
     try:
-        if state == True:
-            phrase = "Enable"
-        else:
-            phrase = "Disable"
+        phrase = "Enable" if state == True else "Disable"
         if ask_clip(phrase):
             clipboard = state
             menu = build_menu()
@@ -265,8 +266,6 @@ def reset_config(systray):
 def build_menu():
     """Builds the configuration menu"""
     try:
-        menu = []
-
         modes = {"m": "multi", "s": "single", "f": "full", "c": "custom"}
 
         mode_names = {"m": "Multi Window", "s": "Single Window", "f": "Fullscreen", "c": current_custom_profile}
@@ -275,11 +274,9 @@ def build_menu():
                     ["Single Window Mode", icon("single"), set_default_profile, "s"],
                     ["Fullscreen Mode", icon("full"), set_default_profile, "f"]]
 
-        
+
         dpi_options = [("DPI Scaling Mode", icon("dpi"), [("Linux - Sharper but Slower (active)", icon("dpi_lin"), dpi_set, 0),
                                                           ("Windows - Faster but Blurrier", icon("dpi_win"), dpi_set, 1)])]#,
-                                                          #("Windows GDI Enhanced", icon("dpi_enhanced"), dpi_set, 2)])]
-        
         options = [("Configure GWSL", icon("config"), config),
                    ("Log and Configuration Cleanup", icon("refresh"), reset_config),
                    ("View Logs", icon("logs"), open_logs),
@@ -291,33 +288,34 @@ def build_menu():
         current_icon = icon(modes[display_mode])
 
         profiles = defaults
-        
+
         for profile in custom_profiles:
-            text = "Custom - " + str(profile) + ""
+            text = f"Custom - {str(profile)}"
             prof = [text, icon("custom"), set_custom_profile, profile]
             profiles.append(prof)
-        
+
         mode_name = mode_names[display_mode]
-        
+
         for p in profiles:
             profile_id = p[3]
-            if display_mode == "c":
-                if profile_id == mode_name:
-                    p[0] = p[0] + " (active)"
+            if (
+                display_mode == "c"
+                and profile_id == mode_name
+                or display_mode != "c"
+                and display_mode == profile_id
+            ):
+                p[0] = f"{p[0]} (active)"
 
-            else:
-                if display_mode == profile_id:
-                    p[0] = p[0] + " (active)"
-
-            
-            
         profiles = [tuple(l) for l in profiles] #make it a list of tuples
-        
-        menu.append((f"XServer Profiles ({mode_name})", current_icon,
-                     profiles + [("Add A Profile", icon("add"), add_profile)]))
-            
-        menu.append(("Rescan Profiles", icon("refresh"), rescan))
-        
+
+        menu = [
+            (
+                f"XServer Profiles ({mode_name})",
+                current_icon,
+                profiles + [("Add A Profile", icon("add"), add_profile)],
+            ),
+            ("Rescan Profiles", icon("refresh"), rescan),
+        ]
         if display_mode != "c":
             # Clipboard options are only enabled for multi, single, and fullscreen default modes
             if clipboard:
@@ -344,10 +342,7 @@ def ask():
                                    "This might force-close some windows.",
                               title="Switch Profile",
                               buttons=["Yes", "No"])
-    if choice == "Yes":
-        return True
-    else:
-        return False
+    return choice == "Yes"
 
 
 def ask_clip(phrase):
@@ -356,35 +351,30 @@ def ask_clip(phrase):
                                    "This might force-close some windows.",
                               title=f"{phrase} Clipboard",
                               buttons=["Yes", "No"])
-    if choice == "Yes":
-        return True
-    else:
-        return False
+    return choice == "Yes"
 
 
 def ask_dpi():
     """Prompts user to confirm changing DPI"""
-    choice = pymsgbox.confirm(text="To apply changes, the GWSL will close. Be sure to save any work open in GWSL "
-                                   "programs. This will force close windows running in GWSL. Restart now?",
-                              title=f"Restart XServer to Apply Changes?",
-                              buttons=["Yes", "No"])
-    if choice == "Yes":
-        return True
-    else:
-        return False
+    choice = pymsgbox.confirm(
+        text="To apply changes, the GWSL will close. Be sure to save any work open in GWSL "
+        "programs. This will force close windows running in GWSL. Restart now?",
+        title="Restart XServer to Apply Changes?",
+        buttons=["Yes", "No"],
+    )
+    return choice == "Yes"
 
 
 def ask_reset():
     """Prompts user to confirm clearing logs and resetting config"""
-    choice = pymsgbox.confirm(text="Delete GWSL logs and reset configuration? This will not delete shortcuts. "
-                                   "The GWSL XServer will need to be restarted. Be sure to save any work open in GWSL "
-                                   "programs. This will force close windows running in GWSL.",
-                              title=f"Clear GWSL Data?",
-                              buttons=["Yes", "No"])
-    if choice == "Yes":
-        return True
-    else:
-        return False
+    choice = pymsgbox.confirm(
+        text="Delete GWSL logs and reset configuration? This will not delete shortcuts. "
+        "The GWSL XServer will need to be restarted. Be sure to save any work open in GWSL "
+        "programs. This will force close windows running in GWSL.",
+        title="Clear GWSL Data?",
+        buttons=["Yes", "No"],
+    )
+    return choice == "Yes"
 
 
 def ask_restart():
@@ -393,10 +383,7 @@ def ask_restart():
         text="Hmm... The GWSL service just crashed or was closed. Do you want to restart the service?",
         title="XServer Has Stopped",
         buttons=['Yes', 'No'])
-    if answer == "Yes":
-        return True
-    else:
-        return False
+    return answer == "Yes"
 
 
 def restart_server():
@@ -451,14 +438,7 @@ def start_server():
 def get_running():
     """Checks whether the GWSL service is currently running"""
     service_name = subprocess.getoutput(f'tasklist /nh /fo csv /FI "PID eq {server_PID}"').split(",")[0]
-    if server_PID == "reloading":
-        return True
-    #print(service_name)
-    #proc_list = os.popen('tasklist').readlines()
-    
-    if "GWSL_vcxsrv" in service_name:
-        return True
-    return False
+    return True if server_PID == "reloading" else "GWSL_vcxsrv" in service_name
 
 
 def main():
@@ -573,7 +553,7 @@ if __name__ == "__main__":
         mode = iset.read()["graphics"]["window_mode"]
         key = {"multi": "m", "single": "s", "full": "f"}
         try:
-            if key[mode] == "m" or key[mode] == "s" or key[mode] == "f":
+            if key[mode] in ["m", "s", "f"]:
                 print("We have a default!! Hooray!")
                 display_mode = key[mode]
                 clipboard = iset.read()["general"]["clipboard"]
